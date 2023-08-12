@@ -25,14 +25,14 @@ local ImportTabClass = newClass("ImportTab", "ControlHost", "Control", function(
 	self.build = build
 
 	self.charImportMode = "GETACCOUNTNAME"
-	self.charImportStatus = "Idle"
-	self.controls.sectionCharImport = new("SectionControl", {"TOPLEFT",self,"TOPLEFT"}, 10, 18, 650, 250, "Character Import")
+	self.charImportStatus = "空"
+	self.controls.sectionCharImport = new("SectionControl", {"TOPLEFT",self,"TOPLEFT"}, 10, 18, 650, 250, "角色导入")
 	self.controls.charImportStatusLabel = new("LabelControl", {"TOPLEFT",self.controls.sectionCharImport,"TOPLEFT"}, 6, 14, 200, 16, function()
-		return "^7Character import status: "..self.charImportStatus
+		return "^7角色导入状态: "..self.charImportStatus
 	end)
 
 	-- Stage: input account name
-	self.controls.accountNameHeader = new("LabelControl", {"TOPLEFT",self.controls.sectionCharImport,"TOPLEFT"}, 6, 40, 200, 16, "^7To start importing a character, enter the character's account name:")
+	self.controls.accountNameHeader = new("LabelControl", {"TOPLEFT",self.controls.sectionCharImport,"TOPLEFT"}, 6, 40, 200, 16, "^7输入 '角色帐号名' 后点击 '开始' 导入角色:")
 	self.controls.accountNameHeader.shown = function()
 		return self.charImportMode == "GETACCOUNTNAME"
 	end
@@ -57,7 +57,7 @@ local ImportTabClass = newClass("ImportTab", "ControlHost", "Control", function(
 			return a:lower() < b:lower()
 		end)
 	end -- don't load the list many times
-	self.controls.accountNameGo = new("ButtonControl", {"LEFT",self.controls.accountName,"RIGHT"}, 8, 0, 60, 20, "Start", function()
+	self.controls.accountNameGo = new("ButtonControl", {"LEFT",self.controls.accountName,"RIGHT"}, 8, 0, 60, 20, "开始", function()
 		self.controls.sessionInput.buf = ""
 		self:DownloadCharacterList()
 	end)
@@ -71,7 +71,7 @@ local ImportTabClass = newClass("ImportTab", "ControlHost", "Control", function(
 	self.controls.accountHistory:SelByValue(main.lastAccountName)
 	self.controls.accountHistory:CheckDroppedWidth(true)
 
-	self.controls.accountNameUnicode = new("LabelControl", {"TOPLEFT",self.controls.accountRealm,"BOTTOMLEFT"}, 0, 16, 0, 14, "^7Note: if the account name contains non-ASCII characters then it must be URL encoded first.")
+	self.controls.accountNameUnicode = new("LabelControl", {"TOPLEFT",self.controls.accountRealm,"BOTTOMLEFT"}, 0, 16, 0, 14, "^7注意:如果帐号名包含非'ASCII'字符,则必须先进行URL编码。")
 	self.controls.accountNameURLEncoder = new("ButtonControl", {"TOPLEFT",self.controls.accountNameUnicode,"BOTTOMLEFT"}, 0, 4, 170, 18, "^x4040FFhttps://www.urlencoder.org/", function()
 		OpenURL("https://www.urlencoder.org/")
 	end)
@@ -80,13 +80,13 @@ local ImportTabClass = newClass("ImportTab", "ControlHost", "Control", function(
 	self.controls.sessionHeader = new("LabelControl", {"TOPLEFT",self.controls.sectionCharImport,"TOPLEFT"}, 6, 40, 200, 14)
 	self.controls.sessionHeader.label = function()
 		return [[
-^7The list of characters on ']]..self.controls.accountName.buf..[[' couldn't be retrieved. This may be because:
-1. You entered a character name instead of an account name or
-2. This account's characters tab is hidden (this is the default setting).
-If this is your account, you can either:
-1. Uncheck "Hide Characters" in your privacy settings or
-2. Enter a POESESSID below.
-You can get this from your web browser's cookies while logged into the Path of Exile website.
+^7无法检索 ']]..self.controls.accountName.buf..[[' 的角色列表，这可能是因为:
+1. 您输入的是角色名称，而不是帐户名称或
+2. 该帐户的角色选项卡是隐藏的(这是默认设置)。
+如果这是您的帐户，您可以:
+1. 在您的隐私设置取消勾选“隐藏角色”或
+2. 在下方输入 POESESSID 。
+当你登录到流放之路网站时，你可以从你的网络浏览器的cookies中得到这个。
 		]]
 	end
 	self.controls.sessionHeader.shown = function()
@@ -378,7 +378,7 @@ end
 
 function ImportTabClass:DownloadCharacterList()
 	self.charImportMode = "DOWNLOADCHARLIST"
-	self.charImportStatus = "Retrieving character list..."
+	self.charImportStatus = "检索角色列表..."
 	  -- Trim Trailing/Leading spaces
 	local accountName = self.controls.accountName.buf:gsub('%s+', '')
 	local realm = realmList[self.controls.accountRealm.selIndex]
@@ -397,19 +397,19 @@ function ImportTabClass:DownloadCharacterList()
 			self.charImportMode = "GETACCOUNTNAME"
 			return
 		elseif errMsg then
-			self.charImportStatus = colorCodes.NEGATIVE.."Error retrieving character list, try again ("..errMsg:gsub("\n"," ")..")"
+			self.charImportStatus = colorCodes.NEGATIVE.."检索角色列表出错，请重试 ("..errMsg:gsub("\n"," ")..")"
 			self.charImportMode = "GETACCOUNTNAME"
 			return
 		end
 		local charList, errMsg = self:ProcessJSON(response.body)
 		if errMsg then
-			self.charImportStatus = colorCodes.NEGATIVE.."Error processing character list, try again later"
+			self.charImportStatus = colorCodes.NEGATIVE.."检索角色列表出错，请过会儿再重试"
 			self.charImportMode = "GETACCOUNTNAME"
 			return
 		end
 		--ConPrintTable(charList)
 		if #charList == 0 then
-			self.charImportStatus = colorCodes.NEGATIVE.."The account has no characters to import."
+			self.charImportStatus = colorCodes.NEGATIVE.."该账户没有可以导入的角色。"
 			self.charImportMode = "GETACCOUNTNAME"
 			return
 		end
@@ -417,19 +417,19 @@ function ImportTabClass:DownloadCharacterList()
 		-- This workaround grabs the profile page and extracts the correct account name from one of the URLs.
 		launch:DownloadPage(realm.hostName..realm.profileURL..accountName, function(response, errMsg)
 			if errMsg then
-				self.charImportStatus = colorCodes.NEGATIVE.."Error retrieving character list, try again ("..errMsg:gsub("\n"," ")..")"
+				self.charImportStatus = colorCodes.NEGATIVE.."检索角色列表出错，请重试 ("..errMsg:gsub("\n"," ")..")"
 				self.charImportMode = "GETACCOUNTNAME"
 				return
 			end
 			local realAccountName = response.body:match("/view%-profile/([^/]+)/characters"):gsub(".", function(c) if c:byte(1) > 127 then return string.format("%%%2X",c:byte(1)) else return c end end)
 			if not realAccountName then
-				self.charImportStatus = colorCodes.NEGATIVE.."Failed to retrieve character list."
+				self.charImportStatus = colorCodes.NEGATIVE.."检索角色列表失败。"
 				self.charImportMode = "GETSESSIONID"
 				return
 			end
 			self.controls.accountName:SetText(realAccountName)
 			accountName = realAccountName
-			self.charImportStatus = "Character list successfully retrieved."
+			self.charImportStatus = "角色列表检索成功。"
 			self.charImportMode = "SELECTCHAR"
 			self.lastRealm = realm.id
 			main.lastRealm = realm.id
@@ -504,7 +504,7 @@ end
 
 function ImportTabClass:DownloadPassiveTree()
 	self.charImportMode = "IMPORTING"
-	self.charImportStatus = "Retrieving character passive tree..."
+	self.charImportStatus = "正在检索角色被动天赋树..."
 	local realm = realmList[self.controls.accountRealm.selIndex]
 	local accountName = self.controls.accountName.buf
 	local sessionID = #self.controls.sessionInput.buf == 32 and self.controls.sessionInput.buf or (main.gameAccounts[accountName] and main.gameAccounts[accountName].sessionID)
@@ -513,10 +513,10 @@ function ImportTabClass:DownloadPassiveTree()
 	launch:DownloadPage(realm.hostName.."character-window/get-passive-skills?accountName="..accountName.."&character="..charData.name.."&realm="..realm.realmCode, function(response, errMsg)
 		self.charImportMode = "SELECTCHAR"
 		if errMsg then
-			self.charImportStatus = colorCodes.NEGATIVE.."Error importing character data, try again ("..errMsg:gsub("\n"," ")..")"
+			self.charImportStatus = colorCodes.NEGATIVE.."导入角色数据失败，请重试 ("..errMsg:gsub("\n"," ")..")"
 			return
 		elseif response.body == "false" then
-			self.charImportStatus = colorCodes.NEGATIVE.."Failed to retrieve character data, try again."
+			self.charImportStatus = colorCodes.NEGATIVE.."导入角色数据失败，请重试。"
 			return
 		end
 		self.lastCharacterHash = common.sha1(charData.name)
@@ -535,10 +535,10 @@ function ImportTabClass:DownloadItems()
 	launch:DownloadPage(realm.hostName.."character-window/get-items?accountName="..accountName.."&character="..charData.name.."&realm="..realm.realmCode, function(response, errMsg)
 		self.charImportMode = "SELECTCHAR"
 		if errMsg then
-			self.charImportStatus = colorCodes.NEGATIVE.."Error importing character data, try again ("..errMsg:gsub("\n"," ")..")"
+			self.charImportStatus = colorCodes.NEGATIVE.."导入角色数据失败，请重试 ("..errMsg:gsub("\n"," ")..")"
 			return
 		elseif response.body == "false" then
-			self.charImportStatus = colorCodes.NEGATIVE.."Failed to retrieve character data, try again."
+			self.charImportStatus = colorCodes.NEGATIVE.."导入角色数据失败，请重试。"
 			return
 		end
 		self.lastCharacterHash = common.sha1(charData.name)
@@ -569,10 +569,10 @@ function ImportTabClass:ImportPassiveTreeAndJewels(json, charData)
 	end
 
 	if errMsg then
-		self.charImportStatus = colorCodes.NEGATIVE.."Error processing character data, try again later."
+		self.charImportStatus = colorCodes.NEGATIVE.."处理角色数据出错，请过会儿再重试。"
 		return
 	end
-	self.charImportStatus = colorCodes.POSITIVE.."Passive tree and jewels successfully imported."
+	self.charImportStatus = colorCodes.POSITIVE.."被动天赋树和珠宝导入成功。"
 	self.build.spec.jewel_data = copyTable(charPassiveData.jewel_data)
 	self.build.spec.extended_hashes = copyTable(charPassiveData.hashes_ex)
 	--ConPrintTable(charPassiveData)

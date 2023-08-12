@@ -465,7 +465,7 @@ local PassiveTreeClass = newClass("PassiveTree", function(self, treeVersion)
 		for _, nodeId in ipairs(startNode.linkedId) do
 			local node = nodeMap[nodeId]
 			if node.type == "Normal" then
-				node.modList:NewMod("Condition:ConnectedTo"..class.name.."Start", "FLAG", true, "Tree:"..nodeId)
+				node.modList:NewMod("Condition:ConnectedTo"..class.name.."开始", "FLAG", true, "Tree:"..nodeId)
 			end
 		end
 	end

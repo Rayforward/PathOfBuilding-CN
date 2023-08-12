@@ -1058,7 +1058,7 @@ function PassiveSpecClass:ReconnectNodeToClassStart(node)
 	for _, linkedNodeId in ipairs(node.linkedId) do
 		for classId, class in pairs(self.tree.classes) do
 			if linkedNodeId == class.startNodeId and node.type == "Normal" then
-				node.modList:NewMod("Condition:ConnectedTo"..class.name.."Start", "FLAG", true, "Tree:"..linkedNodeId)
+				node.modList:NewMod("Condition:ConnectedTo"..class.name.."开始", "FLAG", true, "Tree:"..linkedNodeId)
 			end
 		end
 	end
